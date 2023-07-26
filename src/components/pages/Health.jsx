@@ -1,25 +1,27 @@
 import React from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link } from 'react-router-dom'
+import Loader from "./Loader";
 
 export default function Health() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const typeFilter = searchParams.get("type");
-  const [typeData, setTypeData] = React.useState();
-  console.log(typeFilter);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [searchParams, setSearchParams] = useSearchParams()
+  const typeFilter = searchParams.get("type")
+  const [typeData, setTypeData] = React.useState()
   React.useEffect(() => {
     async function recData() {
-      const response = await fetch(
-        `https://api.edamam.com/api/recipes/v2?type=public&app_id=5356d460&app_key=000e634ee221f3cc3fe235e57022402b&health=${typeFilter}`
-      );
+      setIsLoading(true);
+      const response = await fetch(`https://api.edamam.com/api/recipes/v2?type=public&app_id=5356d460&app_key=000e634ee221f3cc3fe235e57022402b&health=${typeFilter}`);
       setTypeData(await response.json());
+      setIsLoading(false);
     }
-    if (typeFilter) {
+    if(typeFilter){
       recData();
-    } else {
-      setTypeData({ from: 1, to: 0, count: 0, _links: {}, hits: [] });
+    }else{
+      setTypeData({from: 1, to: 0, count: 0, _links: {}, hits: []})
     }
   }, [typeFilter]);
   console.log(typeData);
+  console.log(isLoading);
   function handleFilterChange(key, value) {
     setSearchParams((prevParams) => {
       if (value === null) {
@@ -29,14 +31,6 @@ export default function Health() {
       }
       return prevParams;
     });
-  }
-
-  if (!typeData) {
-    return (
-      <>
-        <div>wait....</div>
-      </>
-    );
   }
   const foodFilteredItem = typeData?.hits.map((data, i) => {
     return (
@@ -57,9 +51,6 @@ export default function Health() {
       </Link>
     );
   });
-  const handleNextPage = () => {
-    console.log(typeData._links.next.href)
-  }
   const dishTypes = [
     "alcohol-cocktail",
     "alcohol-free",
@@ -85,22 +76,18 @@ export default function Health() {
     "sesame-free",
   ];
 
-  const dishTypesBtn = dishTypes.map((type, i) => {
-    return (
-      <button
-        onClick={() => handleFilterChange("type", `${type}`)}
-        className={`dishTypesBtn`}
-        key={i}
-      >
-        {type}
-      </button>
-    );
-  });
-  return (
+  const dishTypesBtn  = dishTypes.map((type, i)=>{
+    return(
+      <button onClick={() => handleFilterChange("type", `${type}`)} className={`dishTypesBtn`} key={i}>
+      {type}</button>
+    )
+  })
+  return(
     <>
-      <div className="typeBtn">{dishTypesBtn}</div>
-      <section>{foodFilteredItem}</section>
-      <button onClick={() => handleNextPage()}>next</button>
+    <div className="typeBtn">
+      {dishTypesBtn}</div>
+      {isLoading ? (<Loader/>):(<section>{foodFilteredItem}</section>)}
+      
     </>
   );
 }

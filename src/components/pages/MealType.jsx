@@ -1,15 +1,18 @@
 import React from "react";
 import { useSearchParams, Link } from 'react-router-dom'
-
+import Loader from "./Loader"
 export default function MealType() {
+  const [isLoading, setIsLoading] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams()
   const typeFilter = searchParams.get("type")
   const [typeData, setTypeData] = React.useState()
   console.log(typeFilter)
   React.useEffect(() => {
+    setIsLoading(true);
     async function recData() {
       const response = await fetch(`https://api.edamam.com/api/recipes/v2?type=public&app_id=5356d460&app_key=000e634ee221f3cc3fe235e57022402b&mealType=${typeFilter}`);
       setTypeData(await response.json());
+      setIsLoading(false);
     }
     if(typeFilter){
       recData();
@@ -27,14 +30,6 @@ export default function MealType() {
       }
       return prevParams;
     });
-  }
-
-  if(!typeData){
-    return(
-      <>
-        <div>wait....</div>
-      </>
-    )
   }
   const foodFilteredItem = typeData?.hits.map((data, i) => {
     return (
@@ -55,7 +50,7 @@ export default function MealType() {
       </Link>
     );
   });
-  const dishTypes = ["breakfast", "brunch", "lunch/dinner", "snack", "teatime"]
+  const dishTypes = ["breakfast", "brunch", "lunch", "snack", "teatime"]
 
   const dishTypesBtn  = dishTypes.map((type, i)=>{
     return(
@@ -67,7 +62,7 @@ export default function MealType() {
     <>
     <div className="typeBtn">
       {dishTypesBtn}</div>
-      <section>{foodFilteredItem}</section>
+      {isLoading ? (<Loader/>):(<section>{foodFilteredItem}</section>)}
     </>
   );
 }

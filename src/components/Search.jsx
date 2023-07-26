@@ -1,13 +1,17 @@
 import React from "react";
 import { useParams , Link} from "react-router-dom";
 import { search } from "../api";
+import Loader from "./pages/Loader";
 export default function Search() {
   const params = useParams();
+  const [isLoading, setIsLoading] = React.useState(false);
   const [searchData, setSearchData] = React.useState()
   React.useEffect(() => {
     async function recData() {
+      setIsLoading(true);
       const response = await search(params.id);
       setSearchData(response);
+      setIsLoading(false);
     }
     recData();
   }, [params]);
@@ -31,8 +35,9 @@ export default function Search() {
       </Link>
     );
   });
-  if(!searchData){
-      return(<>wait...</>)
-  }
-  return <section>{foodItem}</section>;
+  return (
+    <>
+  {isLoading ? (<Loader/>):(<section>{foodItem}</section>)}
+  </>
+  )
 }

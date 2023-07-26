@@ -1,10 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import fake from "./fake";
-
-
+import { homePage } from "../api";
+import Loader from "./pages/Loader";
 export default function Home() {
-  const foodItem = fake[0].hits.map((data, i) => {
+  const [searchData, setSearchData] = React.useState();
+  React.useEffect(() => {
+    async function recData() {
+      const response = await homePage();
+      setSearchData(response);
+    }
+    recData();
+  }, []);
+  const foodItem = searchData?.hits.map((data, i) => {
     return (
       <Link
         to={`/recipeDetail?name=${data.recipe.uri}`}
@@ -23,6 +30,8 @@ export default function Home() {
       </Link>
     );
   });
-
+  if (!searchData) {
+    return <Loader/>;
+  }
   return <section>{foodItem}</section>;
 }

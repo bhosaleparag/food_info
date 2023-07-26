@@ -1,6 +1,6 @@
 import React from "react";
-import fake from "./fake";
 import { useLocation } from "react-router-dom";
+import Loader from "./pages/Loader";
 
 // export async function loader(obj) {
 //   return obj
@@ -23,7 +23,7 @@ export default function RecipeDetail() {
   if(!apiData){
     return(
       <>
-        <div>wait....</div>
+        <Loader/>
       </>
     )
   }

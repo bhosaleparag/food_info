@@ -1,15 +1,19 @@
 import React from "react";
 import { useSearchParams, Link } from 'react-router-dom'
+import Loader from "./Loader";
 
 export default function Diet() {
+  const [isLoading, setIsLoading] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams()
   const typeFilter = searchParams.get("type")
   const [typeData, setTypeData] = React.useState()
   console.log(typeFilter)
   React.useEffect(() => {
     async function recData() {
+      setIsLoading(true);
       const response = await fetch(`https://api.edamam.com/api/recipes/v2?type=public&app_id=5356d460&app_key=000e634ee221f3cc3fe235e57022402b&diet=${typeFilter}`);
       setTypeData(await response.json());
+      setIsLoading(false);
     }
     if(typeFilter){
       recData();
@@ -27,14 +31,6 @@ export default function Diet() {
       }
       return prevParams;
     });
-  }
-
-  if(!typeData){
-    return(
-      <>
-        <div>wait....</div>
-      </>
-    )
   }
   const foodFilteredItem = typeData?.hits.map((data, i) => {
     return (
@@ -67,7 +63,7 @@ export default function Diet() {
     <>
     <div className="typeBtn">
       {dishTypesBtn}</div>
-      <section>{foodFilteredItem}</section>
+      {isLoading ? (<Loader/>):(<section>{foodFilteredItem}</section>)}
     </>
   );
 }
