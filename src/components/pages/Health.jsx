@@ -21,7 +21,12 @@ export default function Health() {
     }
   }, [typeFilter]);
   console.log(typeData);
-  console.log(isLoading);
+  async function recDataNext() {
+    setIsLoading(true);
+    const response = await fetch(typeData?._links.next.href);
+    setTypeData(await response.json());
+    setIsLoading(false);
+  }
   function handleFilterChange(key, value) {
     setSearchParams((prevParams) => {
       if (value === null) {
@@ -87,7 +92,9 @@ export default function Health() {
     <div className="typeBtn">
       {dishTypesBtn}</div>
       {isLoading ? (<Loader/>):(<section>{foodFilteredItem}</section>)}
-      
+      <div className="typeBtn">
+      <button onClick={recDataNext} className='dishTypesBtn'>Next</button>
+      </div>
     </>
   );
 }

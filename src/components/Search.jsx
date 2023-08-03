@@ -15,7 +15,12 @@ export default function Search() {
     }
     recData();
   }, [params]);
-    console.log(searchData?.hits);
+    async function recDataNext() {
+      setIsLoading(true);
+      const response = await fetch(searchData?._links.next.href);
+      setSearchData(await response.json());
+      setIsLoading(false);
+    }
   const foodItem = searchData?.hits.map((data, i) => {
     return (
       <Link
@@ -38,6 +43,9 @@ export default function Search() {
   return (
     <>
   {isLoading ? (<Loader/>):(<section>{foodItem}</section>)}
+  <div className="typeBtn">
+      <button onClick={recDataNext} className='dishTypesBtn'>Next</button>
+      </div>
   </>
   )
 }

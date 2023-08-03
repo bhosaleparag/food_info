@@ -18,7 +18,6 @@ export default function RecipeDetail() {
     }
     recData();
   }, []);
-  console.log(apiData?.recipe);
   const recipeData = apiData?.recipe;
   if(!apiData){
     return(

@@ -7,7 +7,6 @@ export default function Diet() {
   const [searchParams, setSearchParams] = useSearchParams()
   const typeFilter = searchParams.get("type")
   const [typeData, setTypeData] = React.useState()
-  console.log(typeFilter)
   React.useEffect(() => {
     async function recData() {
       setIsLoading(true);
@@ -21,7 +20,12 @@ export default function Diet() {
       setTypeData({from: 1, to: 0, count: 0, _links: {}, hits: []})
     }
   }, [typeFilter]);
-  console.log(typeData);
+  async function recDataNext() {
+    setIsLoading(true);
+    const response = await fetch(typeData?._links.next.href);
+    setTypeData(await response.json());
+    setIsLoading(false);
+  }
   function handleFilterChange(key, value) {
     setSearchParams((prevParams) => {
       if (value === null) {
@@ -64,6 +68,9 @@ export default function Diet() {
     <div className="typeBtn">
       {dishTypesBtn}</div>
       {isLoading ? (<Loader/>):(<section>{foodFilteredItem}</section>)}
+      <div className="typeBtn">
+      <button onClick={recDataNext} className='dishTypesBtn'>Next</button>
+      </div>
     </>
   );
 }

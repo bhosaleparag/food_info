@@ -6,7 +6,6 @@ export default function MealType() {
   const [searchParams, setSearchParams] = useSearchParams()
   const typeFilter = searchParams.get("type")
   const [typeData, setTypeData] = React.useState()
-  console.log(typeFilter)
   React.useEffect(() => {
     setIsLoading(true);
     async function recData() {
@@ -20,7 +19,12 @@ export default function MealType() {
       setTypeData({from: 1, to: 0, count: 0, _links: {}, hits: []})
     }
   }, [typeFilter]);
-  console.log(typeData);
+  async function recDataNext() {
+    setIsLoading(true);
+    const response = await fetch(typeData?._links.next.href);
+    setTypeData(await response.json());
+    setIsLoading(false);
+  }
   function handleFilterChange(key, value) {
     setSearchParams((prevParams) => {
       if (value === null) {
@@ -33,6 +37,7 @@ export default function MealType() {
   }
   const foodFilteredItem = typeData?.hits.map((data, i) => {
     return (
+      <>
       <Link
         to={`/recipeDetail?name=${data.recipe.uri}`}
         className="foodItem-main"
@@ -48,13 +53,14 @@ export default function MealType() {
           </span>
         </article>
       </Link>
+      </>
     );
   });
   const dishTypes = ["breakfast", "brunch", "lunch", "snack", "teatime"]
 
   const dishTypesBtn  = dishTypes.map((type, i)=>{
     return(
-      <button onClick={() => handleFilterChange("type", `${type}`)} className={`dishTypesBtn`} key={i}>
+      <button onClick={() => handleFilterChange("type", `${type}`)} className='dishTypesBtn' key={i}>
       {type}</button>
     )
   })
@@ -62,7 +68,14 @@ export default function MealType() {
     <>
     <div className="typeBtn">
       {dishTypesBtn}</div>
-      {isLoading ? (<Loader/>):(<section>{foodFilteredItem}</section>)}
+      {isLoading ? (<Loader/>):(
+        <>
+      <section>{foodFilteredItem}</section>
+      <div className="typeBtn">
+      <button onClick={recDataNext} className='dishTypesBtn'>Next</button>
+      </div>
+      </>
+      )}
     </>
   );
 }
