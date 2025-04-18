@@ -1,17 +1,27 @@
 import React from "react";
 import { useSearchParams, Link } from 'react-router-dom'
 import Loader from "./Loader"
+
+const dishTypes = ["breakfast", "brunch", "lunch", "snack", "teatime"]
+
 export default function MealType() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams()
-  const typeFilter = searchParams.get("type")
+  const typeFilter = searchParams.get("type") || dishTypes[0]
   const [typeData, setTypeData] = React.useState()
+
   React.useEffect(() => {
     setIsLoading(true);
     async function recData() {
-      const response = await fetch(`https://api.edamam.com/api/recipes/v2?type=public&app_id=5356d460&app_key=000e634ee221f3cc3fe235e57022402b&mealType=${typeFilter}`);
-      setTypeData(await response.json());
-      setIsLoading(false);
+      try {
+        const response = await fetch(`https://api.edamam.com/api/recipes/v2?type=public&app_id=${import.meta.env.VITE_EDAMAM_APP_ID}&app_key=${import.meta.env.VITE_EDAMAM_APP_KEY}&mealType=${typeFilter}`);
+        const data = await response.json();
+        setTypeData(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setIsLoading(false);
+      }
     }
     if(typeFilter){
       recData();
@@ -19,12 +29,14 @@ export default function MealType() {
       setTypeData({from: 1, to: 0, count: 0, _links: {}, hits: []})
     }
   }, [typeFilter]);
+
   async function recDataNext() {
     setIsLoading(true);
     const response = await fetch(typeData?._links.next.href);
     setTypeData(await response.json());
     setIsLoading(false);
   }
+
   function handleFilterChange(key, value) {
     setSearchParams((prevParams) => {
       if (value === null) {
@@ -35,6 +47,7 @@ export default function MealType() {
       return prevParams;
     });
   }
+
   const foodFilteredItem = typeData?.hits.map((data, i) => {
     return (
       <>
@@ -56,7 +69,6 @@ export default function MealType() {
       </>
     );
   });
-  const dishTypes = ["breakfast", "brunch", "lunch", "snack", "teatime"]
 
   const dishTypesBtn  = dishTypes.map((type, i)=>{
     return(
@@ -64,6 +76,7 @@ export default function MealType() {
       {type}</button>
     )
   })
+
   return(
     <>
     <div className="typeBtn">

@@ -1,34 +1,44 @@
 import React from "react";
 import { useSearchParams, Link } from 'react-router-dom'
 import Loader from "./Loader";
+import NotFound from "../NotFound";
+import { getByDishType, getNextPage } from "../../api";
+
+const dishTypes = ["alcohol cocktail", "biscuits and cookies", "bread", "cereals", "condiments and sauces", "desserts", "drinks", "egg", "main course", "pancake", "pasta","preps","preserve", "salad", "sandwiches", "seafood", "side dish", "soup", "starter", "sweets","special occasions"]
 
 export default function DishType() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchParams, setSearchParams] = useSearchParams()
-  const typeFilter = searchParams.get("type")
+  const typeFilter = searchParams.get("type") || dishTypes[0]
   const [typeData, setTypeData] = React.useState()
+
   React.useEffect(() => {
     async function recData() {
       setIsLoading(true);
-      try{
-        const response = await fetch(
-          `https://api.edamam.com/api/recipes/v2?type=public&app_id=5356d460&app_key=000e634ee221f3cc3fe235e57022402b&dishType=${typeFilter}`
-        );
-        setTypeData(await response.json());
-        setIsLoading(false);
-      }
-      catch(error){
+      try {
+        const response = await getByDishType(typeFilter);
+        setTypeData(response);
+      } catch (error) {
+        console.error("Failed to fetch dish type recipes:", error);
+      } finally {
         setIsLoading(false);
       }
     }
     recData();
   }, [typeFilter]);
+
   async function recDataNext() {
     setIsLoading(true);
-    const response = await fetch(typeData?._links.next.href);
-    setTypeData(await response.json());
-    setIsLoading(false);
+    try {
+      const response = await getNextPage(typeData?._links.next.href);
+      setTypeData(response);
+    } catch (error) {
+      console.error("Failed to fetch next page:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   function handleFilterChange(key, value) {
     setSearchParams((prevParams) => {
       if (value === null) {
@@ -39,6 +49,7 @@ export default function DishType() {
       return prevParams;
     });
   }
+
   const foodFilteredItem = typeData?.hits.map((data, i) => {
     return (
       <Link
@@ -58,7 +69,6 @@ export default function DishType() {
       </Link>
     );
   });
-  const dishTypes = ["alcohol cocktail", "biscuits and cookies", "bread", "cereals", "condiments and sauces", "desserts", "drinks", "egg", "main course", "pancake", "pasta","preps","preserve", "salad", "sandwiches", "seafood", "side dish", "soup", "starter", "sweets","special occasions"]
 
   const dishTypesBtn  = dishTypes.map((type, i)=>{
     return(
@@ -66,13 +76,26 @@ export default function DishType() {
       {type}</button>
     )
   })
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (!typeData?.hits?.length) {
+    return <NotFound />;
+  }
+
   return(
     <>
-    <div className="typeBtn">{dishTypesBtn}</div>
-      {isLoading ? (<Loader />) : (<section>{foodFilteredItem}</section>)}
       <div className="typeBtn">
-      <button onClick={recDataNext} className='dishTypesBtn'>Next</button>
+        {dishTypesBtn}
       </div>
+      <section>{foodFilteredItem}</section>
+      {typeData?._links?.next && (
+        <div className="typeBtn">
+          <button onClick={recDataNext} className='dishTypesBtn'>Next</button>
+        </div>
+      )}
     </>
   );
 }
