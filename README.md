@@ -110,6 +110,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## 📧 Contact
 
-Your Name - your.email@example.com
+Your Name - paragbhosale06@gmail.com
 
-Project Link: https://github.com/yourusername/foodInfo 
+Project Link: https://foodinfodelta.vercel.app/
